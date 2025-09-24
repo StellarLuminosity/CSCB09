@@ -1,0 +1,71 @@
+#! /bin/bash
+
+num=5
+format="-m"
+
+while getopts "mrn:" opt ; do
+	case "$opt" in
+		m)
+            format="-m"
+			;;
+		r)
+            format="-r"
+			;;
+        n)
+            num=$OPTARG
+            ;;
+        *)
+            exit 1            
+	esac
+done; 
+
+
+shift $(($OPTIND - 1)) # shifts $1 to the end of the list of paremeters
+
+roster="$1" # name of roster file
+marks="/dev/stdin"
+
+# the file that's always passed:
+#   1001414214,trebla,albert@mail.utoronto.ca
+#   1031415044,hoarecha,tony@mail.utoronto.ca
+#   1000905416,hintonge,geoff@mail.utoronto.ca
+#   1002005031,dijkstra,ewd@mail.utoronto.ca
+
+
+# recall that the MarkUs file will be in the format:
+#   dijkstra,73
+#   hintonge,100
+#   hoarecha,76
+
+
+if [ "$format" = "-m" ]; then
+    sorted_marks=$(sort -k1 -t, "$marks") 
+    join -t, -1 2 -2 1 -o 1.3,2.2 <(sort -k2 -t, $roster) <(echo "$sorted_marks") \
+    | sort -k2 -r -n -t, | head -n $num
+    exit 0
+fi
+
+# recall that the RO file will be in the format (sorted by ASCII values
+#   (alphabetically)):
+#   1000905416,100
+#   1002005031,73
+#   1031415044,76
+
+if [ "$format" = "-r" ]; then
+    sorted_marks=$(sort -k1 -t, "$marks")
+    join -t, -1 1 -2 1 -o 1.3,2.2  <(sort -k1 -t, $roster) <(echo "$sorted_marks") \
+    | sort -k2 -r -n -t, | head -n $num
+    exit 0
+fi
+
+# if we have the MarkUs file, we sort the Rooster file based on UtorIDs
+# if we have the RO file, we sort the Rooster file based on the studentIDs
+# then we use the join command to combine the two based on the key (the key 
+# depends on the type of mark file)
+# we sort the joined file by marks
+# and output the first num lines using the head command
+
+
+
+
+
