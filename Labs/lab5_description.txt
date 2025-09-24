@@ -1,0 +1,25 @@
+This is an exercise in trouble-shooting mistakes in using malloc'd space. It is almost a certainty that when it is your turn you will make even worse and harder-to-notice mistakes than the ones in this exercise, so it is important to get started on detecting problematic code.
+
+My code in ea.c is faulty! Your job is to fix my mistakes.
+
+Valgrind is a great tool for (among other things) catching memory usage errors during run time, including array index out of bounds, mistakes in using malloc'd space, and mistakes about freeing space. (Forgetting to free is known as “memory leak”.)
+
+Valgrind is available on Mathlab. In your own Ubuntu, you can install the C compiler, Valgrind, and related packages by
+
+sudo apt install gcc libc6-dev make manpages-dev glibc-doc valgrind
+The code to fix is in ea.c, but two more files are needed for testing: ea.h, pi.c (sample main()). Make all of them available and compile by
+
+gcc -O2 -Wall -g ea.c pi.c -o pi
+“-g” records “debugging information” such as source code line numbers for use by Valgrind (and other debugging tools).
+
+Run it under Valgrind by:
+
+valgrind --leak-check=yes ./pi
+If you want Valgrind's report in a file instead, add “--log-file=filename”.
+
+You can declare victory when Valgrind concludes:
+
+ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+Check out Valgrind quick start guide for more explanations and digging deeper. (And man valgrind and valgrind --help as usual.)
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/l05/00-handout.html
