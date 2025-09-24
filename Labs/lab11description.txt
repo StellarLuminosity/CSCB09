@@ -1,0 +1,59 @@
+getaddrinfo
+getaddrinfo() takes many parameters because it can do many things; the man page can be overwhelming at first sight. On the bright side, it offers to completely fill in a sockaddr_in struct for you (or sockaddr_in6 when used for IPv6), ready for passing to connect().
+
+You should read the man page, but here is an orientation:
+
+int getaddrinfo(const char *host,
+                const char *service,
+                const struct addrinfo *hints,
+                struct addrinfo **res);
+host: The domain name, e.g., "mathlab.utsc.utoronto.ca"
+
+service: If you intend a port number, this can be the string form of that number, e.g., "22" for port number 22. Why string? Because many common port numbers have names, e.g., 22 is known as ssh, and you can give "ssh" here. (See /etc/services for more common ports and names.)
+
+getaddrinfo() wants this because it offers to fill in the port-number field in sockaddr_in (or sockaddr_in6) for you later.
+
+hints: Pointer to a struct you have filled in for narrowing down the search, e.g., “only IPv4 addresses”, “only for stream sockets”. (See below.)
+
+res: Pointer to your own pointer variable for receiving answer from getaddrinfo().
+
+For the purpose of hints, the following 4 fields in the addrinfo struct are of interest, and the other fields should be set to 0 (if number field) or NULL (if pointer field):
+
+ai_family: AF_INET if you want IPv4-only, AF_INET6 if IPv6-only, AF_UNSPEC if you accept both.
+
+ai_socktype: SOCK_STREAM if stream-only (this course), SOCK_DGRAM if datagram-only, 0 if you accept both.
+
+ai_protocol: 0 in this course for stream-only. (Similar to the protocol parameter of socket().)
+
+ai_flags: Moar customizations. You may just use 0 for this lab. See the man page or the textbook for the full menu.
+
+In the addrinfo struct you receive via res, the fields ai_family, ai_socktype, ai_protocol have actual resolved values (useful for calling socket()), plus:
+
+ai_addr is pointer to a sockaddr struct (including port number), ready for connect(). In this lab, you give it to print_inet4_addr() (provided in the starter code).
+
+ai_addrlen is actual size of that struct, ready for connect().
+
+ai_canonname: Not used in this lab. (See the man page.)
+
+ai_next is a pointer to another addrinfo. Yes you have a linked list of possibly multiple answers. Reasons: a domain name can have multiple IP addresses; if you didn’t restrict to stream-only or datagram-only, you may receive both versions; if you didn’t restrict to IPv4-only or IPv6-only, you may receive both.
+
+Task
+Your job is to complete getaddr.c to call getaddrinfo() and then use the provided print_inet4_addr() to print out all IPv4 addresses found.
+
+After that, learn and use freeaddrinfo() to free the addrinfo linked list. I will use valgrind to check this!
+
+Optional: If getaddrinfo() returns a non-zero number, learn and use gai_strerror() for the corresponding error message, print it to stderr, and exit.
+
+Sample runs and outputs, assuming your executable is ./getaddr :
+
+$ ./getaddr utsc.utoronto.ca
+142.1.96.30
+$ ./getaddr ageofempires.com | sort
+20.112.250.133
+20.231.239.246
+20.236.44.162
+20.70.246.20
+20.76.201.171
+The ageofempires.com example shows a case of multiple answers. Although the order can be different every time, piping to sort should yield a reproducible result, as shown.
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/l11/00-handout.html 
