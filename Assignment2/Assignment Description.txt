@@ -1,0 +1,67 @@
+Overview
+The Solarflares Tea And Lemonade Company maintains binary data files that have fixed-length records of customer names and loyalty points (called sunspots). The two operations they need you to implement are looking up sunspots and updating sunspots of a customer.
+
+File/Record Format
+Each record takes 32 bytes and conforms to this struct on x86-64 (in record.h):
+
+#define NAME_LEN_MAX 29
+
+typedef struct record {
+  unsigned char name_len;        // length of name
+  char name[NAME_LEN_MAX];       // name; NOT nul-terminated! use name_len above
+  unsigned short sunspots;       // 2 bytes on x86-64
+} record;
+I need to emphasize again: The name is not NUL-terminated like C strings! You must use name_len for its length. The name can really be as long as NAME_LEN_MAX; and when not, the unused space contains arbitrary data—make no assumption.
+
+And yet! The functions you will implement take C NUL-terminated strings as arguments. You will need to bridge the gap.
+
+The data file is 0 or more records consecutively, and not sorted in any particular order. The provided sample.dat has 3 records. A good way to display it is hexdump -C sample.dat:
+
+$ hexdump -C sample.dat 
+00000000  0e 44 65 6e 6e 69 73 20  52 69 74 63 68 69 65 2d  |.Dennis Ritchie-|
+00000010  2d 2d 2d 2d 2d 2d 2d 2d  2d 2d 2d 2d 2d 2d 86 07  |--------------..|
+00000020  0a 41 72 63 68 69 6d 65  64 65 73 2d 2d 2d 2d 2d  |.Archimedes-----|
+00000030  2d 2d 2d 2d 2d 2d 2d 2d  2d 2d 2d 2d 2d 2d 22 01  |--------------".|
+00000040  0b 41 6c 61 6e 20 54 75  72 69 6e 67 2d 2d 2d 2d  |.Alan Turing----|
+00000050  2d 2d 2d 2d 2d 2d 2d 2d  2d 2d 2d 2d 2d 2d 60 ea  |--------------`.|
+00000060
+Leftmost column: file position (hexadecimal). Middle chunk: bytes in hexadecimal. Right column: bytes as characters, so whenever there should be a string, you can read it. It’s 16 bytes per line, nicely two lines (32 bytes) per record.
+
+Here are the records explained:
+
+Name: Dennis Ritchie (length 14), 1926 sunspots (hex 786, x86-64 stores multi-byte numbers in reverse byte order, the two bytes are 86, 07.)
+
+Name: Archimedes (length 10), 290 sunspots.
+
+Name: Alan Turing (length 11), 60,000 sunspots.
+
+Printing all records (1 mark, automark only)
+You should write more code than you hand in. Two reasons: Exercises, and sometimes you need to make your own diagnostic tools. Here is 1 token mark to give you a nudge.
+
+Complete and hand in print.c to read a data file and print all records in human format; print in the same order as in the file. You can then use it to help verify your work in the rest of the assignment. A sample of the exact output format is in sample-print.txt.
+
+You will need: How to adapt printf %s to print a string that has a known length but no NUL. How to find out: In the man page or on https://en.cppreference.com/w/c/io/fprintf, look for:
+
+what does “precision” mean for %s
+how/where to specify precision
+how to say “but can I give it as an argument?” because the name_len field is a variable and it’s different every time
+Access operations (10 marks)
+There are two access operations to implement (hand in record.c):
+
+int get_sunspots(FILE *f, const char *name, unsigned short *psunspots);
+Briefly: Get the sunspots field from the record that has the given name. There are more conditions, especially how to store the answer, and what if there is no such record; see the comments in record.h.
+
+void set_sunspots(FILE *f, const char *name, unsigned short sunspots);
+Briefly: Look for the record that has the given name, change the sunspots field to the given number. If there is no such record, write a new one at the end of the file. There are more conditions, see the comments in record.h.
+
+You may assume that f has already been opened appropriately. You may assume that the name argument is at most NAME_LEN_MAX bytes long (if not counting NUL termination).
+
+A sample user program sample-main.c is provided to read Ritchie’s sunspots, add a new record for a new name, and change Archimedes’s sunspots.
+
+Important: If you can’t implement one of the functions, you must still provide it with an essentially empty body free of compile-time errors, like in the starter code. Otherwise I can’t test the other one you can implement. A simple test: You can build an executable from your file with sample-main.c.
+
+gcc -O2 -Wall record.c sample-main.c
+Error handling
+Except for stated requirements, error handling is optional for simplicity. If you have debugging/error messages, send them to stderr only.
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/a2/cscb09-2024-5-a2.html
