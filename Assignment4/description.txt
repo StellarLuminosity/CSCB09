@@ -1,0 +1,132 @@
+Remote Sunspot Query Service
+The protocol in this assignment allows clients to look up sunspots of Solarflares customers from a server. In short, a client sends a name to the server, and the server looks up in its customer file and replies with sunspots or not-found.
+
+Since stream sockets are used, we can’t rely on packet boundaries for message boundaries. We use a newline to mark the end of a message.
+
+Here is the detailed protocol sequence (assuming neither clients nor servers malfunction):
+
+The client connects to the server.
+
+Steps 3-4 below can happen 0 or more times before step 5.
+
+The client sends a name (1 to 29 bytes) followed by a newline.
+
+If the name is found in the server’s customer file, the server sends the sunspot amount as a decimal string (at most 10 digits) followed by a newline.
+
+If the name is not found, the server sends none followed by a newline.
+
+The client disconnects.
+
+Client (5 marks)
+(Please submit client.c.)
+
+Implement a client program that takes names from stdin and queries the server for sunspots.
+
+There are 2 command line arguments: server address in dot notation, server port number. (When marking, they are always valid.)
+
+If connection is unsuccessful, you may print an error message of your choice to stderr. Exit with exit code 1.
+
+If connection is successful:
+
+Print Ready on its own line to stdout. (So the user knows.)
+
+Read a line from stdin. You may assume that it is at most 30 bytes including newline.
+
+If EOF or a blank line (just a newline and no other character), close the connection and exit with exit code 0.
+
+Send the name to the server. Print the server’s reply to stdout. Don’t print more than one newline.
+
+Go to 2.
+
+The lack of prompting is to simplify automarking. If you prefer to add prompting, please use stderr.
+
+Here is a sample session (also in sample-in.txt and sample-out.txt):
+
+stdin	stdout
+Ready
+Archimedes	290
+Trebla Lai	none
+Dennis Ritchie	1926
+Note that there is no blank line after the sunspot amount or none.
+
+Server malfunctions happen all the time due to bugs and service disruptions. Here are the scenerios you must handle as prescribed:
+
+Connection failure is covered above.
+
+Error or EOF when sending to or receiving from server: This means unexpected disconnection. The client should exit with exit code 1. You may print error messages to stderr.
+
+(Added August 5) SIGPIPE when sending to server: This means unexpected disconnection. The client should be killed by the signal or exit with exit code 1 (up to you). You may print error messages to stderr.
+
+After receiving 11 bytes from the server you still don’t see a newline: Server bug. The client should not treat it as a valid reply. The client should exit with exit code 1. You may print error messages to stderr.
+
+Server (10 marks)
+(Please submit server.c.)
+
+Implement a server program that replies to client queries based on data in a customer file.
+
+There are 2 command line arguments: port number, pathname (of the customer file). When marking, they are always valid. The customer file may be read-only.
+
+The format of the customer file is as in A2. (You may reuse code from your or my A2 solution. A shortened version of record.h with just the max name length and the struct will be present when marking—see starter files. You will not be able to submit record.c—transfer what you need to server.c.)
+
+The server should bind to the given port at address INADDR_ANY. We do expect this to fail all the time due to the “address already in use” error. If this happens, print an error message to stderr and exit with exit code 1.
+
+The server should be responsive to multiple existing and incoming clients concurrently, even when a bad client stalls and wants the server to wait forever; bad clients happen all the time by bad luck, bugs, or malice. Well-known approaches are: forking a child process for each client, so the parent is just an accept-fork loop; or multiplexing by select() or epoll(); or multi-threading. You may choose which approach you want. (Forking is the easiest.)
+
+The protocol specifies that it is the client that initiates disconnection. Therefore, the server side trying to send or receive then gets an error, EOF, or SIGPIPE. This is part of normal workflow; this is not supposed to bring down the server.
+
+If you use forking: Zombie processes should not happen. And yet, the parent process should not hang indefinitely to wait for a child to die, since it must also stay responsive to new connection requests.
+
+Busy polling is disallowed. Marking will be done under a tight limit on CPU time.
+
+Client malfunctions happen all the time, even more than server malfunctions. We expect the Internet to be full of both fools and trolls. Here are the scenerios you should handle as prescribed:
+
+Client disconnects prematurely: As covered above.
+
+After receiving 30 bytes from the client you still don’t see a newline: For simplicity, disconnect the client.
+
+Sample Clients And Servers
+I will have sample clients and servers (exe only, clearly) available on Mathlab in /courses/courses/cscb09s24/laialber/a4/sample
+
+Debugging And Error Messages
+If you like to print debugging or error messages for your own sake, please send them to stderr only.
+
+Good-Citizen Policy
+Marks can be deducted from this assignment if, on the Mathlab server or BV lab PCs, you have left-over processes that have been consuming more than 24 hours of CPU time (the TIME field in ps, top, and htop).
+
+Testing Tips
+Randomize Port Number
+When you run a server on Mathlab, since everyone is doing the same, you should randomly choose a port number between 1024 and 65535. I recommend running /courses/courses/cscb09s24/laialber/a4/random-port to get one. (It doesn’t check actual availability, so if you still get “address in use”, just get another one.)
+
+Manual Testing by nc
+The nc program can let you manually act as one side to hand-test the other side. You enter to stdin what to send; you see received data on stdout. Quickstart:
+
+To act as a client: nc [-v] [-q 1] DOTADDRESS PORT
+
+To act as a server: nc [-v] [-q 1] -n -l [DOTADDRESS] PORT. Note that this calls accept() only once, at the beginning. It only serves one client, then quits.
+
+Mathlab Server, PC Client
+Mathlab is behind a firewall. A firewall blocks most ports for safety, including ports we need for testing this assignment. ssh can help get past the firewall.
+
+If you have a server running on Mathlab at port sssss, e.g.:
+
+mathlab$ /path/to/server sssss /path/to/customer-file
+Then “ssh local forwarding” allows you to run a client on your PC. Pick a random port number xxxxx (criterion: available on your PC). Then the ssh command goes like:
+
+my-pc$ ssh -L xxxxx:127.0.0.1:sssss utorid@mathlab.utsc.utoronto.ca
+Tell your client on your PC that the server address and port are:
+
+my-pc$ /path/to/client 127.0.0.1 xxxxx
+PC Server, Mathlab Client
+Your home router has a firewall; Windows adds an extra one. A firewall blocks most ports for safety, including ports we need for testing this assignment. ssh can help get past the firewalls.
+
+If you have a server running on your PC at port sssss, e.g.:
+
+my-pc$ /path/to/server sssss /path/to/customer-file
+Then “ssh remote forwarding” allows you to run a client on Mathlab. Pick a random port number xxxxx (criterion: available on Mathlab). Then the ssh command goes like:
+
+my-pc$ ssh -R xxxxx:127.0.0.1:sssss utorid@mathlab.utsc.utoronto.ca
+Tell your client on Mathlab that the server address and port are:
+
+mathlab$ /path/to/client 127.0.0.1 xxxxx
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/a4/cscb09-2024-5-a4.html
