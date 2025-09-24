@@ -1,0 +1,22 @@
+B09 Lab week 8
+This lab is on learning and practicing opendir(), readdir(), and closedir() to read a directory. They are fairly straightforward; please read their man pages (e.g., “man readdir”) for how to use them.
+
+Write a C program list.c that takes 1 command-line argument for a directory name. Print the filenames and file types in that directory, one per line.
+
+For simplicity, we only identify these file types: regular, directory, symlink; all other types (and unknown) are “other”. For simplicity again, you may assume that the non-standard d_type field is valid; this works on Mathlab and most Ubuntu installations. (A more proper way is to use the lstat() system call to get file types. You can look into it if interested.)
+
+You will notice that the filenames are in an arbitrary order, and may even differ from the sample output below. This is normal. Just print in the order readdir() returns.
+
+For simplicity, you may assume legal inputs as promised above, and omit most error handling, though it is always a good idea to check whether opendir() actually succeeds. If you add debugging/error messages for your sake, please send them to stderr only.
+
+Sample output:
+
+$ ./a.out /courses/courses/cscb09s24/laialber/l08
+. directory
+.. directory
+symlink-to-list.c symlink
+list.c regular
+00-handout.html regular
+Please submit your C file as list.c
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/l08/00-handout.html
