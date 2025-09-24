@@ -1,0 +1,75 @@
+Congratulations Top Students!
+UTSC CMS wants to select top students and email them congratulation messages! You will write a shell script to help them.
+
+The input and output formats are:
+
+Student roster: A CSV file of student IDs, UTORids, and email addresses. It is not sorted. We assume uniqueness. Some students in this file may be absent in the mark files below; then they don’t have marks. All students in mark files are present in this file. sample-roster.txt
+
+1001414214,trebla,albert@mail.utoronto.ca
+1031415044,hoarecha,tony@mail.utoronto.ca
+1000905416,hintonge,geoff@mail.utoronto.ca
+1002005031,dijkstra,ewd@mail.utoronto.ca
+MarkUs marks format: A CSV file of UTORids and marks (non-negative integers). We assume uniqueness. In part A, it is sorted by UTORid. In part B, it is not sorted. sample-markus.txt
+
+dijkstra,73
+hintonge,100
+hoarecha,76
+RO (Registrar’s Office) marks format: A CSV file of student IDs and marks (non-negative integers). We assume uniqueness. In part A, it is sorted by student ID alphabetically, not numerically. In part B, it is not sorted. sample-ro.txt
+
+1000905416,100
+1002005031,73
+1031415044,76
+Output format: Congratulation list: A CSV file of email addresses and marks, sorted by decreasing marks. We assume that different students have different marks. sample-stdout.txt
+
+geoff@mail.utoronto.ca,100
+tony@mail.utoronto.ca,76
+Part A
+Write a shell script high-A in basic sh that can be used as
+
+sh high-A [OPTIONS] ROSTER MARKS
+where ROSTER and MARKS are the filenames of a roster file and a mark file, respectively. There is no argument for the output filename—output to stdout.
+
+The options are:
+
+-m: The MARKS file is in MarkUs format.
+-r: The MARKS file is in RO format.
+Exactly one of -m xor -r is required.
+-n NUM: Number of students to output for the congratulation list. Default to 5 if absent.
+You may ignore or error out on unrecognized options.
+Output the congratulation list of NUM highest-mark students. If there are not enough students, output everyone who has a mark.
+
+Auto-marking will stick to valid syntax and inputs. If you still like to be robust and handle invalid syntax, you may send error messages to stderr and/or exit with a non-zero exit code.
+
+You will need the help of these programs: sort, join, head. You may not write your own loop to process student records. You may not use a program that fundamentally defines a whole different programming language (e.g., perl, awk).
+
+You will need to combine them by pipelining. You may not write “intermediate temporary” files or modify input files. Auto-marking will be under heavy lockdown in a docker container.
+
+Examples:
+
+sh high-A -m -n 2 sample-roster.txt sample-markus.txt
+sh high-A -r -n 2 sample-roster.txt sample-ro.txt
+Both should produce output identical to sample-stdout.txt.
+
+Part B
+Write a shell script high-B in bash that can be used as
+
+bash high-B [OPTIONS] ROSTER
+where options and ROSTER are as in part A. But this time, the marks come from stdin, and not initially sorted.
+
+Output (to stdout) the congratulation list of NUM highest-mark students. If there are not enough students, output everyone who has a mark.
+
+Auto-marking will stick to valid syntax and inputs. If you still like to be robust and handle invalid syntax, you may send error messages to stderr and/or exit with a non-zero exit code.
+
+This time you need the help of bash process substitution (e.g., “foo <(bar)”), in addition to pipelining. You may not write your own loop to process student records. You may not use a program that fundamentally defines a whole different programming language (e.g., perl, awk).
+
+You may not write “intermediate temporary” files or modify input files. Auto-marking will be under heavy lockdown in a docker container.
+
+Examples:
+
+bash high-B -m -n 2 sample-roster.txt < sample-markus.txt
+bash high-B -r -n 2 sample-roster.txt < sample-ro.txt
+Both should produce output identical to sample-stdout.txt.
+
+You should also test with your own mark files that are unsorted or in random order.
+
+from: https://www.cs.utoronto.ca/~trebla/CSCB09-2024-Summer/a1/cscb09-2024-5-a1.html
